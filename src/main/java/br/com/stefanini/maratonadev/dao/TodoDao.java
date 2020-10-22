@@ -27,7 +27,6 @@ public class TodoDao {
 		String nomeSql = "INSERIR_TODO";
 		Query query = em.createNamedQuery(nomeSql);
 		
-		query.setParameter("id", todo.getId());
 		query.setParameter("nome", todo.getNome());
 		query.setParameter("dataCriacao", todo.getDataCriacao());
 		
@@ -46,6 +45,16 @@ public class TodoDao {
 		}
 		return listaRetorno;
 	}
-	
+
+	@Transactional
+	public void excluir(Long id) {
+		String nomeSql = "EXCLUIR_TODO";
+		Query query = em.createNamedQuery(nomeSql);
+		
+		query.setParameter("id", id);
+		
+		query.executeUpdate();
+		
+	}
 	
 }

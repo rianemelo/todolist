@@ -23,8 +23,10 @@ import org.hibernate.annotations.CreationTimestamp;
 	@NamedNativeQuery(name="CONSULTAR_TODO", query = ""
 			+ "SELECT id, nome, dataCriacao FROM todo", resultClass = Todo.class),
 	@NamedNativeQuery(name="INSERIR_TODO", query = ""
-			+ "INSERT INTO todo (id, nome, dataCriacao) values "
-			+ "(:id, :nome, :dataCriacao)", resultClass = Todo.class),
+			+ "INSERT INTO todo (nome, dataCriacao) values "
+			+ "(:nome, :dataCriacao)"),
+	@NamedNativeQuery(name="EXCLUIR_TODO", query = ""
+			+ "DELETE todo WHERE id = :id"),
 })
 
 

@@ -3,6 +3,7 @@ package br.com.stefanini.maratonadev.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
@@ -10,10 +11,12 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
 
-
+import br.com.maratonadev.dto.TodoDto;
 import br.com.stefanini.maratonadev.dao.TodoDao;
 import br.com.stefanini.maratonadev.model.Todo;
+import br.com.stefanini.maratonadev.model.parser.TodoParser;
 
+// usamos o DTO na service
 
 @RequestScoped
 public class TodoService {
@@ -29,16 +32,26 @@ public class TodoService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public void inserir(Todo todo) {
+	public void inserir(TodoDto todoDto) {
 		//validação
+		Todo todo = new Todo();
+		todo = TodoParser.get().entidade(todoDto);
 		validar(todo);
 		todo.setDataCriacao(LocalDateTime.now());
 		//chamada da dao
 		dao.inserir(todo);
 	}
 	
-	public List<Todo> listar() {
-		return dao.listar();
+	public List<TodoDto> listar() {
+		return dao
+				.listar()
+				.stream()
+				.map(TodoParser.get()::dto)
+				.collect(Collectors.toList());
+	}
+	
+	public void excluir(Long id) {
+		dao.excluir(id);
 	}
 
 
