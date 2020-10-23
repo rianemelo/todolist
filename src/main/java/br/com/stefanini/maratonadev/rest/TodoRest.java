@@ -1,11 +1,19 @@
 package br.com.stefanini.maratonadev.rest;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.persistence.Id;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -19,8 +27,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+
 import br.com.maratonadev.dto.TodoDto;
 import br.com.stefanini.maratonadev.model.Todo;
+import br.com.stefanini.maratonadev.model.parser.TodoParser;
 import br.com.stefanini.maratonadev.service.TodoService;
 
 
@@ -31,6 +41,9 @@ public class TodoRest {
 	
 	@Inject
 	TodoService service;
+	
+	@Inject
+	Validator validator; //hibenrate validator
 	
 	@GET
 	@Path("")
@@ -64,7 +77,22 @@ public class TodoRest {
 			}
 	)
 	public Response incluir(TodoDto todo) {
-		service.inserir(todo);
+		Set<ConstraintViolation<TodoDto>> erros 
+		= validator.validate(todo);
+		
+		if (erros.isEmpty()) {
+			service.inserir(todo);
+		} else {
+			List<String> listaErros = erros.stream()
+			.map(ConstraintViolation::getMessage)
+			.collect(Collectors.toList());
+//			listaErros.forEach(i -> {
+//				System.out.println(i);
+//			});
+			throw new NotFoundException(listaErros.get(0));
+			
+		}
+		
 		return Response
 				.status(Status.CREATED)
 				.build();			
@@ -72,8 +100,47 @@ public class TodoRest {
 	
 	@DELETE
 	@Path("/{id}")
-	@Operation(summary = "Excluir uma tarefa", 
-	description = "Excluir uma tarefa")
+	@Operation(summary = "Excluir uma tarefa",
+	description = "Excluir uma tarefa")	
+	@APIResponse(responseCode = "202",
+	description = "tarefa",
+	content = {
+			@Content(mediaType =  "application/json",
+			schema = @Schema(implementation = TodoDto.class))
+			}
+	)
+	public Response excluir(@PathParam("id") Long id) {
+		service.excluir(id);
+		return Response
+				.status(Response.Status.ACCEPTED)
+				.build();
+	}
+	
+	
+	@GET
+	@Path("/{id}")
+	@Operation(summary = "Busca a tarefa pelo seu ID",
+	description = "Busca pelo ID")	
+	@APIResponse(responseCode = "200",
+	description = "tarefa",
+	content = {
+			@Content(mediaType =  "application/json",
+			schema = @Schema(implementation = TodoDto.class))
+			}
+	)
+	public Response buscarPorId(@PathParam("id") Long id) {
+		TodoDto todoDto = service.buscar(id);
+		return Response
+				.status(Response.Status.ACCEPTED)
+				.entity(todoDto)
+				.build();
+	}
+
+
+	@PUT
+	@Path("{id}")
+	@Operation(summary = "Editar uma tarefa", 
+	description = "Editar uma tarefa")
 	@APIResponse(responseCode = "200",
 	description = "tarefa",
 	content = {
@@ -82,13 +149,12 @@ public class TodoRest {
 			
 			}
 	)
-	public Response excluir(@PathParam("id") Long id) {
-		service.excluir(id);
+	public Response atualizar(@PathParam("id") Long id, TodoDto todo) {
+		service.atualizar(id, todo);
 		return Response
-				.status(Status.ACCEPTED)
+				.status(Status.OK)
 				.build();			
 	}
-
 	
 	
 }
