@@ -22,43 +22,42 @@ public class TodoDao {
 	EntityManager em;
 	
 	
-//	@Transactional
-//	public void inserir(Todo todo) {
-//		String nomeSql = "INSERIR_TODO";
-//		Query query = em.createNamedQuery(nomeSql);
-//		
-//		query.setParameter("nome", todo.getNome());
-//		query.setParameter("dataCriacao", todo.getDataCriacao());
-//		
-//		query.executeUpdate();
-//		
-//	}
-	
-	@Transactional //Insere um TODO e retorna o ID criado
-	public Long inserir(Todo todo) {
+	@Transactional
+	public void inserir(Todo todo) {
 		String nomeSql = "INSERIR_TODO";
-		inserirOuAtualizar(nomeSql, todo);		
-		return todo.getId();
+		Query query = em.createNamedQuery(nomeSql);
+		
+		query.setParameter("nome", todo.getNome());
+		query.setParameter("dataCriacao", todo.getDataCriacao());
+		
+		query.executeUpdate();
+		
 	}
 	
 	
 	@Transactional
 	public void atualizar(Todo todo) {
 		String nomeSql = "ATUALIZAR_TODO";
-		inserirOuAtualizar(nomeSql, todo);
-	}
-	
-	
-	@Transactional
-	private void inserirOuAtualizar(String nomeSql, Todo todo) {
 		Query query = em.createNamedQuery(nomeSql);
 		
 		query.setParameter("id", todo.getId());
 		query.setParameter("nome", todo.getNome());
 		query.setParameter("dataCriacao", todo.getDataCriacao());
 		query.executeUpdate();
-		
+	
 	}
+	
+	
+//	@Transactional
+//	private void inserirOuAtualizar(String nomeSql, Todo todo) {
+//		Query query = em.createNamedQuery(nomeSql);
+//		
+//		query.setParameter("id", todo.getId());
+//		query.setParameter("nome", todo.getNome());
+//		query.setParameter("dataCriacao", todo.getDataCriacao());
+//		query.executeUpdate();
+//		
+//	}
 
 	
 	public List<Todo> listar(){
